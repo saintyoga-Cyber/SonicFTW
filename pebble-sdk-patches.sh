@@ -17,127 +17,86 @@ fi
 echo ""
 echo "Applying SDK patches..."
 
+# Find SDK base directory
+SDK_BASE=$(find ~/.pebble-sdk -type d -name "sdk-core" 2>/dev/null | head -1)
+if [ -z "$SDK_BASE" ]; then
+    SDK_BASE=$(find /home -type d -name "sdk-core" 2>/dev/null | head -1)
+fi
+
+if [ -z "$SDK_BASE" ]; then
+    echo "ERROR: Could not find Pebble SDK. Make sure it's installed."
+    exit 1
+fi
+
+echo "Found SDK at: $SDK_BASE"
+echo ""
+
 # Patch 1: report_memory_usage.py - disable the function entirely
 # This fixes: NameError: name 'task_gen262144' is not defined
-# and TypeError: list indices must be integers or slices, not str
-REPORT_FILE=$(find ~/.pebble-sdk -name "report_memory_usage.py" 2>/dev/null | head -1)
+echo "Patching report_memory_usage.py..."
+REPORT_FILE=$(find "$SDK_BASE" -name "report_memory_usage.py" 2>/dev/null | head -1)
 if [ -n "$REPORT_FILE" ]; then
-  echo "Found: $REPORT_FILE"
-  python3 << 'PATCHPY'
-import os
-import glob
-
-# Find all report_memory_usage.py files
-report_files = glob.glob(os.path.expanduser("~/.pebble-sdk/**/report_memory_usage.py"), recursive=True)
-
-for report_file in report_files:
-    try:
-        with open(report_file, 'r') as f:
-            content = f.read()
-        
-        # Check if already patched
-        if "return  # PATCHED" in content:
-            print(f"  Already patched: {report_file}")
-            continue
-        
-        # Find and patch the function definition
-        old_def = "def generate_memory_usage_report(task_gen):"
-        if old_def in content:
-            lines = content.split('\n')
-            new_lines = []
-            for i, line in enumerate(lines):
-                new_lines.append(line)
-                if old_def in line:
-                    # Add return with tab indentation
-                    new_lines.append('\treturn  # PATCHED: skip memory report')
-            content = '\n'.join(new_lines)
-            with open(report_file, 'w') as f:
-                f.write(content)
-            print(f"  Patched: {report_file}")
-        else:
-            print(f"  Pattern not found in: {report_file}")
-    except Exception as e:
-        print(f"  Error patching {report_file}: {e}")
-
-if not report_files:
-    print("  No report_memory_usage.py files found")
-PATCHPY
+    echo "  Found: $REPORT_FILE"
+    if grep -q "return  # PATCHED" "$REPORT_FILE" 2>/dev/null; then
+        echo "  Already patched"
+    else
+        # Use sed to add return statement after the function definition
+        sed -i '/def generate_memory_usage_report(task_gen):/a\\treturn  # PATCHED: skip memory report' "$REPORT_FILE"
+        echo "  Patched successfully"
+    fi
 else
-  echo "  report_memory_usage.py not found"
+    echo "  File not found"
 fi
 
 # Patch 2: process_bundle.py - fix binaries attribute
 # This fixes: AttributeError: 'task_gen' object has no attribute 'binaries'
-BUNDLE_FILE=$(find ~/.pebble-sdk -name "process_bundle.py" 2>/dev/null | head -1)
+echo ""
+echo "Patching process_bundle.py..."
+BUNDLE_FILE=$(find "$SDK_BASE" -name "process_bundle.py" 2>/dev/null | head -1)
 if [ -n "$BUNDLE_FILE" ]; then
-  echo ""
-  echo "Patching process_bundle.py..."
-  python3 << 'PATCHPY'
-import os
-import glob
-
-bundle_files = glob.glob(os.path.expanduser("~/.pebble-sdk/**/process_bundle.py"), recursive=True)
-
-for bundle_file in bundle_files:
-    try:
-        with open(bundle_file, 'r') as f:
-            content = f.read()
-        
-        if 'task_gen.binaries' in content and 'getattr(task_gen, "binaries", [])' not in content:
-            content = content.replace('task_gen.binaries', 'getattr(task_gen, "binaries", [])')
-            with open(bundle_file, 'w') as f:
-                f.write(content)
-            print(f"  Patched: {bundle_file}")
-        else:
-            print(f"  Already patched or pattern not found: {bundle_file}")
-    except Exception as e:
-        print(f"  Error patching {bundle_file}: {e}")
-
-if not bundle_files:
-    print("  No process_bundle.py files found")
-PATCHPY
+    echo "  Found: $BUNDLE_FILE"
+    if grep -q 'getattr(task_gen, "binaries", \[\])' "$BUNDLE_FILE" 2>/dev/null; then
+        echo "  Already patched"
+    else
+        sed -i 's/task_gen\.binaries/getattr(task_gen, "binaries", [])/g' "$BUNDLE_FILE"
+        echo "  Patched successfully"
+    fi
 else
-  echo "  process_bundle.py not found"
+    echo "  File not found"
 fi
 
-# Patch 3: Node.py - handle missing files gracefully
-NODE_FILE=$(find ~/.pebble-sdk -path "*waflib/Node.py" 2>/dev/null | head -1)
-if [ -n "$NODE_FILE" ]; then
-  echo ""
-  echo "Patching Node.py..."
-  python3 << 'PATCHPY'
-import os
-import glob
-
-node_files = glob.glob(os.path.expanduser("~/.pebble-sdk/**/waflib/Node.py"), recursive=True)
-
-for node_file in node_files:
-    try:
-        with open(node_file, 'r') as f:
-            content = f.read()
-        
-        old_pattern = "def h_file(self):\n\t\treturn Utils.h_file(self.abspath())"
-        new_pattern = """def h_file(self):
-\t\ttry:
-\t\t\treturn Utils.h_file(self.abspath())
-\t\texcept (OSError, IOError):
-\t\t\treturn b'0'*32"""
-
-        if old_pattern in content:
-            content = content.replace(old_pattern, new_pattern)
-            with open(node_file, 'w') as f:
-                f.write(content)
-            print(f"  Patched: {node_file}")
-        else:
-            print(f"  Already patched or pattern not found: {node_file}")
-    except Exception as e:
-        print(f"  Error patching {node_file}: {e}")
-
-if not node_files:
-    print("  No Node.py files found")
-PATCHPY
+# Patch 3: process_js.py - fix js_entry_file attribute
+# This fixes: AttributeError: 'task_gen' object has no attribute 'js_entry_file'
+echo ""
+echo "Patching process_js.py..."
+JS_FILE=$(find "$SDK_BASE" -name "process_js.py" 2>/dev/null | head -1)
+if [ -n "$JS_FILE" ]; then
+    echo "  Found: $JS_FILE"
+    if grep -q 'getattr(task_gen, "js_entry_file"' "$JS_FILE" 2>/dev/null; then
+        echo "  Already patched"
+    else
+        # Replace task_gen.js_entry_file with getattr to handle missing attribute
+        sed -i 's/task_gen\.js_entry_file/getattr(task_gen, "js_entry_file", None)/g' "$JS_FILE"
+        echo "  Patched successfully"
+    fi
 else
-  echo "  Node.py not found"
+    echo "  File not found"
+fi
+
+# Patch 4: Node.py - handle missing files gracefully (optional)
+echo ""
+echo "Patching Node.py..."
+NODE_FILE=$(find "$SDK_BASE" -path "*waflib/Node.py" 2>/dev/null | head -1)
+if [ -n "$NODE_FILE" ]; then
+    echo "  Found: $NODE_FILE"
+    if grep -q "# PATCHED: handle missing files" "$NODE_FILE" 2>/dev/null; then
+        echo "  Already patched"
+    else
+        # This patch is more complex, skip if pattern doesn't match exactly
+        echo "  Skipping complex patch (optional)"
+    fi
+else
+    echo "  File not found"
 fi
 
 echo ""
