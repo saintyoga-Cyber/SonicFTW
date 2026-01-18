@@ -1,0 +1,76 @@
+{
+  "name": "SonicFTW",
+  "version": "3.0.0",
+  "author": "Revived for Rebble",
+  "private": true,
+  "dependencies": {},
+  "keywords": ["pebble-app"],
+  "pebble": {
+    "sdkVersion": "3",
+    "displayName": "Sonic Control",
+    "uuid": "5f1584b1-d138-41d5-95fb-1af8a46a7006",
+    "projectType": "native",
+    "enableMultiJS": true,
+    "watchapp": {
+      "watchface": false,
+      "hiddenApp": false,
+      "onlyShownOnCommunication": false
+    },
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk",
+      "diorite",
+      "emery"
+    ],
+    "capabilities": ["configurable"],
+    "messageKeys": {
+      "menuIndexClicked": 0,
+      "interiorTemp": 1,
+      "batteryPerc": 2,
+      "chargingState": 3,
+      "hoursUntilFull": 4,
+      "chargerVoltage": 5,
+      "chargerCurrent": 6,
+      "idealRangeKm": 7,
+      "idealAddedKm": 8,
+      "chargeToMaxRange": 9,
+      "chargeRateKm": 10,
+      "insideDegC": 11,
+      "outsideDegC": 12,
+      "driverSettingDegC": 13,
+      "passengerSettingDegC": 14,
+      "acStateOn": 15
+    },
+    "resources": {
+      "media": [
+        {
+          "type": "png",
+          "name": "IMAGE_MENU_ICON",
+          "menuIcon": true,
+          "file": "images/menu_icon_tesla.png"
+        },
+        {
+          "type": "png",
+          "name": "IMAGE_MENU_ICON_1",
+          "file": "images/menu_icon_tesla.png"
+        },
+        {
+          "type": "png",
+          "name": "IMAGE_MENU_ICON_2",
+          "file": "images/menu_icon_plug2.png"
+        },
+        {
+          "type": "png",
+          "name": "IMAGE_MENU_ICON_3",
+          "file": "images/menu_icon_battery2.png"
+        },
+        {
+          "type": "png",
+          "name": "IMAGE_MENU_ICON_4",
+          "file": "images/menu_icon_temp2.png"
+        }
+      ]
+    }
+  }
+}
