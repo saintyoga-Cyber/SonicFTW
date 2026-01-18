@@ -85,34 +85,50 @@ fi
 
 # Patch 4: Node.py - fix 'sig' attribute error
 # This fixes: AttributeError: 'Node3' object has no attribute 'sig'
+# The waflib is inside hidden .waf* directories
 echo ""
 echo "Patching Node.py for sig attribute..."
-NODE_FILE=$(find "$SDK_BASE" -path "*waflib/Node.py" 2>/dev/null | head -1)
+NODE_FILE=$(find ~/.pebble-sdk -name "Node.py" -path "*waflib*" 2>/dev/null | grep "4.5" | head -1)
+if [ -z "$NODE_FILE" ]; then
+    NODE_FILE=$(find ~/.pebble-sdk -name "Node.py" -path "*waflib*" 2>/dev/null | head -1)
+fi
 if [ -n "$NODE_FILE" ]; then
     echo "  Found: $NODE_FILE"
     if grep -q "# PATCHED: sig attribute" "$NODE_FILE" 2>/dev/null; then
         echo "  Already patched"
     else
-        # Add sig property to Node3 class if missing
-        sed -i 's/self\.cache_sig=ret\.sig/self.cache_sig=getattr(ret, "sig", None)  # PATCHED: sig attribute/g' "$NODE_FILE"
+        # Fix line 462: self.cache_sig=ret=self.sig
+        # The issue is self.sig may not exist, wrap in try/except via sed
+        sed -i 's/self\.cache_sig=ret=self\.sig/self.cache_sig=ret=getattr(self, "sig", None)  # PATCHED: sig attribute/g' "$NODE_FILE"
         echo "  Patched successfully"
     fi
 else
-    echo "  File not found"
+    echo "  File not found - searching more broadly..."
+    NODE_FILE=$(find /home -name "Node.py" -path "*waflib*" 2>/dev/null | head -1)
+    if [ -n "$NODE_FILE" ]; then
+        echo "  Found: $NODE_FILE"
+        sed -i 's/self\.cache_sig=ret=self\.sig/self.cache_sig=ret=getattr(self, "sig", None)  # PATCHED: sig attribute/g' "$NODE_FILE"
+        echo "  Patched successfully"
+    else
+        echo "  Could not find Node.py"
+    fi
 fi
 
-# Patch 5: Task.py - fix sig_explicit_deps issue
+# Patch 5: Task.py - fix sig_explicit_deps issue  
 # This fixes: Missing node signature errors
 echo ""
 echo "Patching Task.py..."
-TASK_FILE=$(find "$SDK_BASE" -path "*waflib/Task.py" 2>/dev/null | head -1)
+TASK_FILE=$(find ~/.pebble-sdk -name "Task.py" -path "*waflib*" 2>/dev/null | grep "4.5" | head -1)
+if [ -z "$TASK_FILE" ]; then
+    TASK_FILE=$(find ~/.pebble-sdk -name "Task.py" -path "*waflib*" 2>/dev/null | head -1)
+fi
 if [ -n "$TASK_FILE" ]; then
     echo "  Found: $TASK_FILE"
     if grep -q "# PATCHED: sig_explicit" "$TASK_FILE" 2>/dev/null; then
         echo "  Already patched"
     else
-        # Make sig_explicit_deps more lenient
-        sed -i 's/upd(k.get_bld_sig())/upd(getattr(k, "sig", k.get_bld_sig()) if hasattr(k, "get_bld_sig") else b"")  # PATCHED: sig_explicit/g' "$TASK_FILE"
+        # Fix get_bld_sig() calls to handle missing sig attribute
+        sed -i 's/upd(k\.get_bld_sig())/upd(getattr(k, "sig", b"") if hasattr(k, "sig") else k.get_bld_sig())  # PATCHED: sig_explicit/g' "$TASK_FILE"
         echo "  Patched (or pattern not found)"
     fi
 else
