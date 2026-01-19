@@ -9,7 +9,6 @@
     "sdkVersion": "3",
     "displayName": "Sonic Control",
     "uuid": "5f1584b1-d138-41d5-95fb-1af8a46a7006",
-    "projectType": "native",
     "enableMultiJS": true,
     "watchapp": {
       "watchface": false
