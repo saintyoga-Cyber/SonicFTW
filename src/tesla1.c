@@ -1,4 +1,4 @@
-#include "pebble.h"
+#include <pebble.h>
 
 #define NUM_MENU_SECTIONS 3
 #define NUM_FIRST_MENU_ITEMS 2
@@ -245,7 +245,7 @@ static void window_load(Window *window) {
 }
 
 // Deinitialize resources on window unload that were initialized on window load
-void window_unload(Window *window) {
+static void window_unload(Window *window) {
   simple_menu_layer_destroy(simple_menu_layer);
 
   // Cleanup the menu icon

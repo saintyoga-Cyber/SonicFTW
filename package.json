@@ -12,36 +12,28 @@
     "projectType": "native",
     "enableMultiJS": true,
     "watchapp": {
-      "watchface": false,
-      "hiddenApp": false,
-      "onlyShownOnCommunication": false
+      "watchface": false
     },
-    "targetPlatforms": [
-      "aplite",
-      "basalt",
-      "chalk",
-      "diorite",
-      "emery"
-    ],
+    "targetPlatforms": ["aplite", "basalt", "chalk", "diorite", "emery"],
     "capabilities": ["configurable"],
-    "messageKeys": {
-      "menuIndexClicked": 0,
-      "interiorTemp": 1,
-      "batteryPerc": 2,
-      "chargingState": 3,
-      "hoursUntilFull": 4,
-      "chargerVoltage": 5,
-      "chargerCurrent": 6,
-      "idealRangeKm": 7,
-      "idealAddedKm": 8,
-      "chargeToMaxRange": 9,
-      "chargeRateKm": 10,
-      "insideDegC": 11,
-      "outsideDegC": 12,
-      "driverSettingDegC": 13,
-      "passengerSettingDegC": 14,
-      "acStateOn": 15
-    },
+    "messageKeys": [
+      "menuIndexClicked",
+      "interiorTemp",
+      "batteryPerc",
+      "chargingState",
+      "hoursUntilFull",
+      "chargerVoltage",
+      "chargerCurrent",
+      "idealRangeKm",
+      "idealAddedKm",
+      "chargeToMaxRange",
+      "chargeRateKm",
+      "insideDegC",
+      "outsideDegC",
+      "driverSettingDegC",
+      "passengerSettingDegC",
+      "acStateOn"
+    ],
     "resources": {
       "media": [
         {
