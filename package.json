@@ -14,7 +14,7 @@
     "watchapp": {
       "watchface": false
     },
-    "targetPlatforms": ["aplite", "basalt", "chalk", "diorite", "emery"],
+    "targetPlatforms": ["basalt", "chalk", "diorite", "emery"],
     "capabilities": ["configurable"],
     "messageKeys": [
       "menuIndexClicked",
