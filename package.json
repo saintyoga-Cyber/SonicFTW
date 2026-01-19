@@ -38,7 +38,6 @@
         {
           "type": "png",
           "name": "IMAGE_MENU_ICON",
-          "menuIcon": true,
           "file": "images/menu_icon_tesla.png"
         },
         {
