@@ -7,7 +7,6 @@ var climateData;
 var passiveRequest = true;
 
 var COMPANION_URL = 'https://e1d8c72d-759e-4f00-a641-7ea6ad0ad98e-00-2bnv37rv12ota.kirk.replit.dev';
-var TESLA_FLEET_API = 'https://fleet-api.prd.na.vn.cloud.tesla.com';
 
 var settings = {
   distance_unit: "km",
@@ -224,7 +223,7 @@ function getVehicles(nextActions) {
   console.log("Getting vehicles...");
   
   var req = new XMLHttpRequest();
-  req.open('GET', TESLA_FLEET_API + '/api/1/vehicles', true);
+  req.open('GET', COMPANION_URL + '/api/tesla/vehicles', true);
   req.setRequestHeader('Authorization', 'Bearer ' + access_token);
   
   req.onload = function() {
@@ -299,7 +298,7 @@ function getClimateState(nextActions) {
   }
   
   var req = new XMLHttpRequest();
-  req.open('GET', TESLA_FLEET_API + '/api/1/vehicles/' + vehicleID + '/data_request/climate_state', true);
+  req.open('GET', COMPANION_URL + '/api/tesla/vehicles/' + vehicleID + '/data/climate_state', true);
   req.setRequestHeader('Authorization', 'Bearer ' + access_token);
   
   req.onload = function() {
@@ -350,7 +349,7 @@ function getChargedState(nextActions) {
   }
   
   var req = new XMLHttpRequest();
-  req.open('GET', TESLA_FLEET_API + '/api/1/vehicles/' + vehicleID + '/data_request/charge_state', true);
+  req.open('GET', COMPANION_URL + '/api/tesla/vehicles/' + vehicleID + '/data/charge_state', true);
   req.setRequestHeader('Authorization', 'Bearer ' + access_token);
   
   req.onload = function() {
@@ -408,7 +407,7 @@ function getVehicleState() {
   }
   
   var req = new XMLHttpRequest();
-  req.open('GET', TESLA_FLEET_API + '/api/1/vehicles/' + vehicleID + '/data_request/vehicle_state', true);
+  req.open('GET', COMPANION_URL + '/api/tesla/vehicles/' + vehicleID + '/data/vehicle_state', true);
   req.setRequestHeader('Authorization', 'Bearer ' + access_token);
   
   req.onload = function() {
@@ -449,7 +448,7 @@ function performCommand(command, displayName, callback) {
   climateData = null;
   
   var req = new XMLHttpRequest();
-  req.open('POST', TESLA_FLEET_API + '/api/1/vehicles/' + vehicleID + '/command/' + command, true);
+  req.open('POST', COMPANION_URL + '/api/tesla/vehicles/' + vehicleID + '/command/' + command, true);
   req.setRequestHeader('Authorization', 'Bearer ' + access_token);
   req.setRequestHeader('Content-Type', 'application/json');
   
